@@ -65,10 +65,14 @@
 	      :init-form +soap-version-1.2+)
      ;; transport, procedure or #f 
      (transport :init-keyword :transport :reader context-transport
-		:init-value #f)))
+		:init-value #f)
+     ;; base namespace
+     (namespace :init-keyword :namespace :reader context-namespace
+		:init-value '())))
 
-  (define (make-soap-context version :optional (transport #f))
-    (make <soap-context> :version version :transport transport))
+  (define (make-soap-context version :key (transport #f) (namespace '()))
+    (make <soap-context> :version version :transport transport
+	  :namespace namespace))
 
   ;; unfortunately (text html-lite) does not export make-html-element
   ;; but it can be reused in this library, so get it.
@@ -123,7 +127,7 @@
 		((eq? version +soap-version-1.1+) +envelope-namespace-1.1+)
 		(else (error 'soap:envelope
 			     "context has invalid SOAP version" version)))))
-      (let loop ((namespaces namespaces)
+      (let loop ((namespaces (append (context-namespace context) namespaces))
 		 (r (list header body)))
 	(if (null? namespaces)
 	    (cons* :xmlns:xsi "http://www.w3.org/2001/XMLSchema-instance"

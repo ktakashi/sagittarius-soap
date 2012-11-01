@@ -22,10 +22,18 @@
 ;; creates a context
 (define context (make-soap-context
 		 +soap-version-1.1+
+		 :transport 
 		 (make-http-transport "localhost" "/service"
 				      ;; the rest keywords are converted to
 				      ;; extra http header
-				      :authorization "Basic base64user&pass")))
+				      :authorization "Basic base64user&pass")
+		 ;; default namespace.
+		 ;; NOTE: if this namespace(s) and the one given to
+		 ;; soap:envelop are duplicated, however it won't raise any
+		 ;; error. so programmers need to make sure there is not
+		 ;; duplication.
+		 :namespace '((bar "urn://bar.namespace"))))
+
 ;; almost the same style as (text html-lite) library
 ;; just top level of soap:envelop must take at least 2 arguments
 ;; context and body

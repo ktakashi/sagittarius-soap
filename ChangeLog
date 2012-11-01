@@ -1,0 +1,8 @@
+2012-11-01  Takashi Kato  <ktakashi@ymail.com>
+
+	* example:
+	added keyword argument exsamples.
+
+	* make-soap-context:
+	modified to take keyword arguments. (imcompatible change)
+
