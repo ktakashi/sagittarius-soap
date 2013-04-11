@@ -41,7 +41,6 @@
     (import (rnrs)
 	    (clos user)
 	    (text tree)
-	    (pp)
 	    (sagittarius)
 	    (sagittarius control)
 	    (sagittarius object))
@@ -81,9 +80,12 @@
   
   (define-syntax define-soap-type
     (lambda (x)
-      (define (id->string id) (->string (syntax->datum id)))
+      (define (id->string id)
+	(if id
+	    (->string (syntax->datum id))
+	    :no-prefix))
       (define (make-name prefix n)
-	(if prefix
+	(if (and prefix (not (eq? prefix :no-prefix)))
 	    (string->symbol (format "~a:~a" prefix (syntax->datum n)))
 	    (string->symbol (->string (syntax->datum n)))))
       (define (build specs acc)

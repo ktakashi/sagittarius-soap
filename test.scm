@@ -31,10 +31,17 @@
   ;; for convenient
   (:namespace foo (tag1 tag2))
   (:prefix bar (tag3 tag4))
-  (:prefix boo (:namespace brr (tag5 tag6))))
+  (:prefix boo (:namespace brr (tag5 tag6)))
+  (:prefix #f (:namespace brr (tag7 tag8))))
 
 (test-equal "new APIs"
 	    "<foo:tag1>foo1</foo:tag1>" 
 	    (tree->string (foo:tag1 "foo1")))
+
+(test-equal "new APIs(2)"
+	    "<brr:tag7>brr</brr:tag7>" 
+	    (tree->string (tag7 "brr")))
+
+
 
 (test-end)
