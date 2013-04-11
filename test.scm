@@ -2,16 +2,18 @@
 (import (rnrs)
 	(soap lite)
 	(text tree)
-	(srfi :64))
+	(srfi :64)
+	(pp))
 
 (test-begin "SOAP Lite tests")
 
 (define-soap-type (:prefix order shipto) name)
+
 (test-equal "soap element"
 	    '("<" shipto () ">"
 	      (("<" name () ">" ("Name") "</" name ">"))
 	      "</" shipto ">")
-	    (order:shipto (soap:name "Name")))
+	    (order:shipto (name "Name")))
 
 (test-equal "A request"
 	    "<soapenv:Envelope \
@@ -23,6 +25,16 @@
              </soapenv:Envelope>"
 	    (tree->string
 	     (soap:envelope (make-soap-context +soap-version-1.1+)
-			    (soap:body (order:shipto (soap:name "Name"))))))
+			    (soap:body (order:shipto (name "Name"))))))
+
+(define-soap-type
+  ;; for convenient
+  (:namespace foo (tag1 tag2))
+  (:prefix bar (tag3 tag4))
+  (:prefix boo (:namespace brr (tag5 tag6))))
+
+(test-equal "new APIs"
+	    "<foo:tag1>foo1</foo:tag1>" 
+	    (tree->string (foo:tag1 "foo1")))
 
 (test-end)

@@ -41,6 +41,7 @@
     (import (rnrs)
 	    (clos user)
 	    (text tree)
+	    (pp)
 	    (sagittarius)
 	    (sagittarius control)
 	    (sagittarius object))
@@ -89,23 +90,36 @@
 	(define (parse-spec spec)
 	  (syntax-case spec ()
 	    ((:namespace namespace localname)
+	     (identifier? #'localname)
+	     (values (id->string #'namespace) #'(localname)))
+	    ((:namespace namespace localname)
 	     (values (id->string #'namespace) #'localname))
-	    (localname (values #f #'localname))))
+	    (localname 
+	     (identifier? #'localname)
+	     (values #f #'(localname)))
+	    (localname (values #f #'(localname)))))
 	(define (construct prefix spec)
-	  (receive (namespace local) (parse-spec spec)
-	    (let1 name (make-name (if prefix prefix namespace) local)
-	      `(define ,name
-		 (%make-soap-element ',(make-name namespace local) #f)))))
+	  (receive (namespace locals) (parse-spec spec)
+	    (let loop ((locals locals) (r '()))
+	      (syntax-case locals ()
+		(() (reverse! r))
+		((local . locals)
+		 (let1 name (make-name (if prefix prefix namespace) #'local)
+		   (loop #'locals
+			 (cons 
+			  #`(define #,name
+			      (%make-soap-element 
+			       '#,(make-name namespace #'local) #f))
+			  r))))))))
 	(syntax-case specs ()
-	  (() (reverse! acc))
+	  (() acc)
 	  (((:prefix prefix name) rest ...)
 	   (build #'(rest ...)
-		  (cons (construct (id->string #'prefix) #'name) acc)))
+		  (append acc (construct (id->string #'prefix) #'name))))
 	  ((name rest ...)
-	   (build #'(rest ...) (cons (construct #f #'name) acc)))))
+	   (build #'(rest ...) (append acc (construct #f #'name))))))
       (syntax-case x ()
-	((_ specs ...)
-	 #`(begin #,@(build #'(specs ...) '()))))))
+	((_ specs ...) #`(begin #,@(build #'(specs ...) '()))))))
 
   ;; send soap request
   ;; context must have transport slot set.
